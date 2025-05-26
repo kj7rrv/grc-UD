@@ -1,0 +1,3 @@
+[submodule "macula-greek"]
+	path = macula-greek
+	url = git@github.com:Clear-Bible/macula-greek.git
