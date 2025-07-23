@@ -1,4 +1,6 @@
+import os
 import csv
+import traceback
 from lxml import etree
 
 def get_head(node):
@@ -73,7 +75,7 @@ def split_crasis(word):
     # same value
     return None
 
-def process_sentence(sent):
+def process_sentence(sent, file):
     propagate_heads(sent)
     distribute_heads(sent, sent.attrib['PhraseHead'])
     xml_words = sorted(iter_words(sent), key=get_id)
@@ -133,7 +135,7 @@ def process_sentence(sent):
         sent_id += '_' + start.split('!')[1] # TODO
     if v1 != v2:
         sent_id += '-' + v2
-    print('# sent_id =', sent_id)
+    print('# sent_id =', sent_id, file=file)
     for word in conllu_words:
         pieces = []
         for piece in word:
@@ -142,17 +144,21 @@ def process_sentence(sent):
                 pieces.append('|'.join(f'{k}={v}' for k, v in srt) or '_')
             else:
                 pieces.append(str(piece))
-        print('\t'.join(pieces))
-    print('')
+        print('\t'.join(pieces), file=file)
+    print('', file=file)
 
 if __name__ == '__main__':
-    import argparse
-    import glob
-    parser = argparse.ArgumentParser()
-    parser.add_argument('book')
-    args = parser.parse_args()
-    for fname in glob.glob(f'macula-greek/SBLGNT/nodes/*{args.book}.xml'):
-        tree = etree.parse(fname)
+    for fname in sorted(os.listdir('macula-greek/SBLGNT/nodes/')):
+        print(fname, end=" ")
+        path = "macula-greek/SBLGNT/nodes/" + fname
+        tree = etree.parse(path)
         # TODO: merge sentences that are part of the same verse
-        for sent in tree.getroot().iter('Sentence'):
-            process_sentence(sent)
+        try:
+            with open("conv-macula/" + fname.replace(".xml", ".conllu"), "w", encoding="utf-8") as f:
+                for sent in tree.getroot().iter('Sentence'):
+                    process_sentence(sent, f)
+            print("OK")
+        except Exception:
+            print("FAILED (traceback below)")
+            print(traceback.format_exc())
+            print("END TRACEBACK")
