@@ -46,29 +46,54 @@ def iter_words(node):
             yield from iter_words(ch)
 
 FEAT_MAP = {
-    'Case': ('Case', {
+    'Case': [('Case', {
         'Nominative': 'Nom',
         'Accusative': 'Acc',
         'Dative': 'Dat',
         'Genitive': 'Gen',
         'Vocative': 'Voc',
-    }),
-    'Gender': ('Gender', {
+    })],
+    'Gender': [('Gender', {
         'Masculine': 'Masc',
         'Feminine': 'Fem',
         'Neuter': 'Neut',
-    }),
-    'Number': ('Number', {
+    })],
+    'Number': [('Number', {
         'Singular': 'Sing',
         'Plural': 'Plur',
-    }),
+    })],
+    'Tense': [ # Ancient Greek tenses do not fit particularly well into
+               # UD's features; the tenses are here encoded according to
+               # mr-martian (Daniel Swanson)'s table and jpharper
+               # (John-Paul Harper)'s reply at
+               # https://github.com/UniversalDependencies/docs/issues/969
+               #
+               # TODO: distinguish aorist and perfect; see above issue
+        ('Tense', {
+            'Present': 'Pres',
+            'Perfect': 'Past',
+            'Future': 'Fut',
+            'Aorist': 'Past',
+            'Imperfect': 'Past',
+            'Pluperfect': 'Pqp',
+        }),
+        ('Aspect', {
+            'Present': 'Imp',
+            'Perfect': 'Perf',
+            'Future': 'Imp',
+            'Aorist': 'Perf',
+            'Imperfect': 'Imp',
+            'Pluperfect': 'Perf',
+        }),
+    ],
 }
 
 def get_feats(node):
     ret = {}
-    for key in FEAT_MAP:
+    for key, mappings in FEAT_MAP.items():
         if key in node.attrib:
-            ret[FEAT_MAP[key][0]] = FEAT_MAP[key][1].get(node.attrib[key])
+            for mapping in mappings:
+                ret[mapping[0]] = mapping[1].get(node.attrib[key])
     return ret
 
 def get_misc(node):
