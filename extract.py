@@ -53,6 +53,15 @@ FEAT_MAP = {
         'Genitive': 'Gen',
         'Vocative': 'Voc',
     }),
+    'Gender': ('Gender', {
+        'Masculine': 'Masc',
+        'Feminine': 'Fem',
+        'Neuter': 'Neut',
+    }),
+    'Number': ('Number', {
+        'Singular': 'Sing',
+        'Plural': 'Plur',
+    }),
 }
 
 def get_feats(node):
