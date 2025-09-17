@@ -96,19 +96,21 @@ def get_feats(node):
                 ret[mapping[0]] = mapping[1].get(node.attrib[key])
     return ret
 
+MISC_MAP = {
+    'Gloss': 'Gloss',
+    'Tense': 'GreekTense',
+    'Notes': 'Notes',
+    'LN': 'LN',
+}
+
 def get_misc(node):
     ret = {}
-    if 'Gloss' in node.attrib:
-        ret['Gloss'] = node.attrib['Gloss']
 
-    if 'Tense' in node.attrib:
-        ret['GreekTense'] = node.attrib['Tense']
-
-    if 'Notes' in node.attrib:
-        ret['Notes'] = node.attrib['Notes']
-
-    if 'LN' in node.attrib:
-        ret['LN'] = node.attrib['LN']
+    for xml_key, conllu_key in MISC_MAP.items():
+        try:
+            ret[conllu_key] = node.attrib[xml_key]
+        except KeyError:
+            pass
 
     return ret
 
