@@ -104,6 +104,12 @@ def get_misc(node):
     if 'Tense' in node.attrib:
         ret['GreekTense'] = node.attrib['Tense']
 
+    if 'Notes' in node.attrib:
+        ret['Notes'] = node.attrib['Notes']
+
+    if 'LN' in node.attrib:
+        ret['LN'] = node.attrib['LN']
+
     return ret
 
 def split_crasis(word):
