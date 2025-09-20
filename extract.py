@@ -86,14 +86,43 @@ FEAT_MAP = {
             'Pluperfect': 'Perf',
         }),
     ],
+    'Mood': [
+        ('Mood', {
+            'Indicative': 'Ind',
+            'Imperative': 'Imp',
+            'Optative': 'Opt',
+            'Subjunctive': 'Sub',
+        }),
+        ('VerbForm', {
+            'Participle': 'Part',
+            'Infinitive': 'Inf',
+        }),
+    ],
+    'Voice': [
+        ('Voice', {
+            'Active': 'Act',
+            'Middle': 'Mid',
+            'Passive': 'Pass',
+        }),
+    ],
+    'Person': [
+        ('Person', {
+            'First': 1,
+            'Second': 2,
+            'Third': 3,
+        }),
+    ],
 }
 
 def get_feats(node):
     ret = {}
     for key, mappings in FEAT_MAP.items():
         if key in node.attrib:
-            for mapping in mappings:
-                ret[mapping[0]] = mapping[1].get(node.attrib[key])
+            for feat, mapping in mappings:
+                try:
+                    ret[feat] = mapping[node.attrib[key]]
+                except KeyError:
+                    pass
     return ret
 
 MISC_MAP = {
