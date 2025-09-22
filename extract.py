@@ -3,40 +3,45 @@ import csv
 import traceback
 from lxml import etree
 
+
 def get_head(node):
-    '''Return the index of the child that is the head of this phrase.'''
-    if False: # add checks that modify the default structure here
+    """Return the index of the child that is the head of this phrase."""
+    if False:  # add checks that modify the default structure here
         return 0
     # by default, keep what's already there
-    return int(node.attrib.get('Head', 0))
+    return int(node.attrib.get("Head", 0))
+
 
 def get_id(node):
-    xml_id = '{http://www.w3.org/XML/1998/namespace}id'
-    return node.attrib.get('nodeId', node.attrib.get(xml_id))
+    xml_id = "{http://www.w3.org/XML/1998/namespace}id"
+    return node.attrib.get("nodeId", node.attrib.get(xml_id))
+
 
 def propagate_heads(node):
     for ch in node:
         propagate_heads(ch)
     if len(node) == 0:
-        node.attrib['PhraseHead'] = get_id(node)
+        node.attrib["PhraseHead"] = get_id(node)
     else:
         head = get_head(node)
-        node.attrib['PhraseHeadIndex'] = str(head)
-        node.attrib['PhraseHead'] = node[head].attrib['PhraseHead']
+        node.attrib["PhraseHeadIndex"] = str(head)
+        node.attrib["PhraseHead"] = node[head].attrib["PhraseHead"]
+
 
 def distribute_heads(node, headword):
     if len(node) == 0:
         if headword == get_id(node):
-            node.attrib['headword'] = '0'
+            node.attrib["headword"] = "0"
         else:
-            node.attrib['headword'] = headword
+            node.attrib["headword"] = headword
     else:
-        head = int(node.attrib['PhraseHeadIndex'])
+        head = int(node.attrib["PhraseHeadIndex"])
         for i, ch in enumerate(node):
             if i == head:
                 distribute_heads(ch, headword)
             else:
-                distribute_heads(ch, node.attrib['PhraseHead'])
+                distribute_heads(ch, node.attrib["PhraseHead"])
+
 
 def iter_words(node):
     if len(node) == 0:
@@ -45,74 +50,109 @@ def iter_words(node):
         for ch in node:
             yield from iter_words(ch)
 
+
 FEAT_MAP = {
-    'Case': [('Case', {
-        'Nominative': 'Nom',
-        'Accusative': 'Acc',
-        'Dative': 'Dat',
-        'Genitive': 'Gen',
-        'Vocative': 'Voc',
-    })],
-    'Gender': [('Gender', {
-        'Masculine': 'Masc',
-        'Feminine': 'Fem',
-        'Neuter': 'Neut',
-    })],
-    'Number': [('Number', {
-        'Singular': 'Sing',
-        'Plural': 'Plur',
-    })],
-    'Tense': [ # Ancient Greek tenses do not fit particularly well into
-               # UD's features; the tenses are here encoded according to
-               # mr-martian (Daniel Swanson)'s table and jpharper
-               # (John-Paul Harper)'s reply at
-               # https://github.com/UniversalDependencies/docs/issues/969
-               #
-               # TODO: distinguish aorist and perfect; see above issue
-        ('Tense', {
-            'Present': 'Pres',
-            'Perfect': 'Past',
-            'Future': 'Fut',
-            'Aorist': 'Past',
-            'Imperfect': 'Past',
-            'Pluperfect': 'Pqp',
-        }),
-        ('Aspect', {
-            'Present': 'Imp',
-            'Perfect': 'Perf',
-            'Future': 'Imp',
-            'Aorist': 'Perf',
-            'Imperfect': 'Imp',
-            'Pluperfect': 'Perf',
-        }),
+    "Case": [
+        (
+            "Case",
+            {
+                "Nominative": "Nom",
+                "Accusative": "Acc",
+                "Dative": "Dat",
+                "Genitive": "Gen",
+                "Vocative": "Voc",
+            },
+        )
     ],
-    'Mood': [
-        ('Mood', {
-            'Indicative': 'Ind',
-            'Imperative': 'Imp',
-            'Optative': 'Opt',
-            'Subjunctive': 'Sub',
-        }),
-        ('VerbForm', {
-            'Participle': 'Part',
-            'Infinitive': 'Inf',
-        }),
+    "Gender": [
+        (
+            "Gender",
+            {
+                "Masculine": "Masc",
+                "Feminine": "Fem",
+                "Neuter": "Neut",
+            },
+        )
     ],
-    'Voice': [
-        ('Voice', {
-            'Active': 'Act',
-            'Middle': 'Mid',
-            'Passive': 'Pass',
-        }),
+    "Number": [
+        (
+            "Number",
+            {
+                "Singular": "Sing",
+                "Plural": "Plur",
+            },
+        )
     ],
-    'Person': [
-        ('Person', {
-            'First': 1,
-            'Second': 2,
-            'Third': 3,
-        }),
+    "Tense": [  # Ancient Greek tenses do not fit particularly well into
+        # UD's features; the tenses are here encoded according to
+        # mr-martian (Daniel Swanson)'s table and jpharper
+        # (John-Paul Harper)'s reply at
+        # https://github.com/UniversalDependencies/docs/issues/969
+        #
+        # TODO: distinguish aorist and perfect; see above issue
+        (
+            "Tense",
+            {
+                "Present": "Pres",
+                "Perfect": "Past",
+                "Future": "Fut",
+                "Aorist": "Past",
+                "Imperfect": "Past",
+                "Pluperfect": "Pqp",
+            },
+        ),
+        (
+            "Aspect",
+            {
+                "Present": "Imp",
+                "Perfect": "Perf",
+                "Future": "Imp",
+                "Aorist": "Perf",
+                "Imperfect": "Imp",
+                "Pluperfect": "Perf",
+            },
+        ),
+    ],
+    "Mood": [
+        (
+            "Mood",
+            {
+                "Indicative": "Ind",
+                "Imperative": "Imp",
+                "Optative": "Opt",
+                "Subjunctive": "Sub",
+            },
+        ),
+        (
+            "VerbForm",
+            {
+                "Participle": "Part",
+                "Infinitive": "Inf",
+            },
+        ),
+    ],
+    "Voice": [
+        (
+            "Voice",
+            {
+                "Active": "Act",
+                "Middle": "Mid",
+                "Passive": "Pass",
+            },
+        ),
+    ],
+    "Person": [
+        (
+            "Person",
+            {
+                "First": 1,
+                "Second": 2,
+                "Third": 3,
+            },
+        ),
     ],
 }
+
 
 def get_feats(node):
     ret = {}
@@ -125,12 +165,14 @@ def get_feats(node):
                     pass
     return ret
 
+
 MISC_MAP = {
-    'Gloss': 'Gloss',
-    'Tense': 'GreekTense',
-    'Notes': 'Notes',
-    'LN': 'LN',
+    "Gloss": "Gloss",
+    "Tense": "GreekTense",
+    "Notes": "Notes",
+    "LN": "LN",
 }
+
 
 def get_misc(node):
     ret = {}
@@ -143,6 +185,7 @@ def get_misc(node):
 
     return ret
 
+
 def split_crasis(word):
     # if `word` is crasis, return a list of pieces with morph info
     # put the ID (field 0) on the one that should be the head
@@ -150,18 +193,19 @@ def split_crasis(word):
     # same value
     return None
 
+
 def get_deprel(word, pos):
     try:
-        return word.attrib['deprel']
+        return word.attrib["deprel"]
     except KeyError:
-        if pos == 'ADP':
-            return 'case'
-        if pos == 'DET':
-            return 'det'
-        if pos == 'CCONJ':
-            return 'cc'
-        
-        return '_'
+        if pos == "ADP":
+            return "case"
+        if pos == "DET":
+            return "det"
+        if pos == "CCONJ":
+            return "cc"
+
+        return "_"
 
 
 POS_MAP = {
@@ -250,95 +294,114 @@ CONJ_POS_MAP = {
     "ὥστε": "?CONJ",
 }
 
+
 def get_pos(word):
     if word.attrib["Cat"] == "conj":
-        return CONJ_POS_MAP[word.attrib.get('UnicodeLemma')]
+        return CONJ_POS_MAP[word.attrib.get("UnicodeLemma")]
     else:
         return POS_MAP[word.attrib["Cat"]]
 
+
 def process_sentence(sent, file):
     propagate_heads(sent)
-    distribute_heads(sent, sent.attrib['PhraseHead'])
+    distribute_heads(sent, sent.attrib["PhraseHead"])
     xml_words = sorted(iter_words(sent), key=get_id)
     conllu_words = []
     for word in xml_words:
         pos = get_pos(word)
 
         line = [
-            get_id(word),                     # ID
-            word.text,                        # FORM
-            word.attrib.get('UnicodeLemma'),  # LEMMA
-            word.attrib.get('upos', '_'),     # UPOS
-            pos,                              # XPOS
-            get_feats(word),                  # FEATS
-            word.attrib.get('headword', '_'), # HEAD
-            get_deprel(word, pos),            # DEPREL
-            '_',                              # DEPS
-            get_misc(word),                   # MISC
+            get_id(word),  # ID
+            word.text,  # FORM
+            word.attrib.get("UnicodeLemma"),  # LEMMA
+            word.attrib.get("upos", "_"),  # UPOS
+            pos,  # XPOS
+            get_feats(word),  # FEATS
+            word.attrib.get("headword", "_"),  # HEAD
+            get_deprel(word, pos),  # DEPREL
+            "_",  # DEPS
+            get_misc(word),  # MISC
         ]
         punct = None
-        if line[1][-1] in ',.':
+        if line[1][-1] in ",.":
             punct = line[1][-1]
             line[1] = line[1][:-1]
-            line[9]['SpaceAfter'] = 'No'
+            line[9]["SpaceAfter"] = "No"
         cr = split_crasis(line)
         if cr:
             for w in cr:
-                if 'SpaceAfter' in w[9]:
-                    del w[9]['SpaceAfter']
-            gp = [len(cr), line[1], '_', '_', '_', {}, '_', '_', '_', {}]
+                if "SpaceAfter" in w[9]:
+                    del w[9]["SpaceAfter"]
+            gp = [len(cr), line[1], "_", "_", "_", {}, "_", "_", "_", {}]
             if punct:
-                gp[9]['SpaceAfter'] = 'No'
+                gp[9]["SpaceAfter"] = "No"
             conllu_words.append(gp)
             conllu_words += cr
         else:
             conllu_words.append(line)
         if punct:
-            conllu_words.append(['_', punct, punct, 'PUNCT', '_',
-                                 {}, get_id(word), 'punct', '_', {}])
-    id2idx = {'0': '0'}
+            conllu_words.append(
+                [
+                    "_",
+                    punct,
+                    punct,
+                    "PUNCT",
+                    "_",
+                    {},
+                    get_id(word),
+                    "punct",
+                    "_",
+                    {},
+                ]
+            )
+    id2idx = {"0": "0"}
     n = 0
     for word in conllu_words:
         if isinstance(word[0], int):
-            word[0] = f'{n+1}-{n+word[0]}'
+            word[0] = f"{n+1}-{n+word[0]}"
         else:
             n += 1
-            if word[0] != '_':
+            if word[0] != "_":
                 id2idx[word[0]] = str(n)
             word[0] = str(n)
     for word in conllu_words:
-        word[6] = id2idx.get(word[6], '_')
-    ref = sent.attrib['ref']
+        word[6] = id2idx.get(word[6], "_")
+    ref = sent.attrib["ref"]
     book, verses = ref.split()
-    start, end = verses.split('-')
-    v1 = start.split('!')[0]
-    v2 = end.split('!')[0]
-    sent_id = book + '-' + v1
-    if start != v1 + '!1':
-        sent_id += '_' + start.split('!')[1] # TODO
+    start, end = verses.split("-")
+    v1 = start.split("!")[0]
+    v2 = end.split("!")[0]
+    sent_id = book + "-" + v1
+    if start != v1 + "!1":
+        sent_id += "_" + start.split("!")[1]  # TODO
     if v1 != v2:
-        sent_id += '-' + v2
-    print('# sent_id =', sent_id, file=file)
+        sent_id += "-" + v2
+    print("# sent_id =", sent_id, file=file)
     for word in conllu_words:
         pieces = []
         for piece in word:
             if isinstance(piece, dict):
                 srt = sorted(piece.items(), key=lambda t: t[0].lower())
-                pieces.append('|'.join(f'{k}={v}' for k, v in srt) or '_')
+                pieces.append("|".join(f"{k}={v}" for k, v in srt) or "_")
             else:
                 pieces.append(str(piece))
-        print('\t'.join(pieces), file=file)
-    print('', file=file)
+        print("\t".join(pieces), file=file)
+    print("", file=file)
 
-if __name__ == '__main__':
-    for fname in sorted(os.listdir('macula-greek/SBLGNT/nodes/')):
+
+if __name__ == "__main__":
+    for fname in sorted(os.listdir("macula-greek/SBLGNT/nodes/")):
         print(fname, end=" ")
         path = "macula-greek/SBLGNT/nodes/" + fname
         tree = etree.parse(path)
         # TODO: merge sentences that are part of the same verse
         try:
-            with open("conv-macula/" + fname.replace(".xml", ".conllu"), "w", encoding="utf-8") as f:
-                for sent in tree.getroot().iter('Sentence'):
+            with open(
+                "conv-macula/" + fname.replace(".xml", ".conllu"),
+                "w",
+                encoding="utf-8",
+            ) as f:
+                for sent in tree.getroot().iter("Sentence"):
                     process_sentence(sent, f)
             print("OK")
         except Exception:
