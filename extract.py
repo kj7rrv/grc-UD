@@ -150,21 +150,129 @@ def split_crasis(word):
     # same value
     return None
 
+def get_deprel(word, pos):
+    try:
+        return word.attrib['deprel']
+    except KeyError:
+        if pos == 'ADP':
+            return 'case'
+        if pos == 'DET':
+            return 'det'
+        if pos == 'CCONJ':
+            return 'cc'
+        
+        return '_'
+
+
+POS_MAP = {
+    "adj": "ADJ",
+    "adv": "ADV",
+    "det": "DET",
+    "intj": "INTJ",
+    "noun": "NOUN",
+    "num": "NUM",
+    "prep": "ADP",
+    "pron": "PRON",
+    "ptcl": "PART",
+    "verb": "VERB",
+}
+
+CONJ_POS_MAP = {
+    "ἀλλά": "?CONJ",
+    "ἄρα": "?CONJ",
+    "ἆρα": "?CONJ",
+    "ἄχρι": "?CONJ",
+    "γάρ": "?CONJ",
+    "δέ": "?CONJ",
+    "δέ": "?CONJ",
+    "διό": "?CONJ",
+    "διόπερ": "?CONJ",
+    "διότι": "?CONJ",
+    "ἐάν": "?CONJ",
+    "ἐάνπερ": "?CONJ",
+    "εἰ": "?CONJ",
+    "εἴπερ": "?CONJ",
+    "εἴτε": "?CONJ",
+    "ἐπάν": "?CONJ",
+    "ἐπεί": "?CONJ",
+    "ἐπειδή": "?CONJ",
+    "ἐπειδήπερ": "?CONJ",
+    "ἕως": "?CONJ",
+    "ἤ": "?CONJ",
+    "ἡνίκα": "?CONJ",
+    "ἤπερ": "?CONJ",
+    "ἤτοι": "?CONJ",
+    "ἵνα": "?CONJ",
+    "καθά": "?CONJ",
+    "καθάπερ": "?CONJ",
+    "καθό": "?CONJ",
+    "καθότι": "?CONJ",
+    "καθώς": "?CONJ",
+    "καθώσπερ": "?CONJ",
+    "καί": "CCONJ",
+    "καί": "CCONJ",
+    "καίπερ": "?CONJ",
+    "καίτοι": "?CONJ",
+    "καίτοιγε": "?CONJ",
+    "κἀκεῖ": "?CONJ",
+    "κἀκεῖθεν": "?CONJ",
+    "κἄν": "?CONJ",
+    "μέν": "?CONJ",
+    "μέντοι": "?CONJ",
+    "μέχρι(ς)": "?CONJ",
+    "μή": "?CONJ",
+    "μηδέ": "?CONJ",
+    "μήποτε": "?CONJ",
+    "μήτε": "?CONJ",
+    "ὅθεν": "?CONJ",
+    "ὁπότε": "?CONJ",
+    "ὅπου": "?CONJ",
+    "ὅπως": "?CONJ",
+    "ὁσάκις": "?CONJ",
+    "ὅταν": "?CONJ",
+    "ὅτε": "?CONJ",
+    "ὅτι": "?CONJ",
+    "οὗ": "?CONJ",
+    "οὐδέ": "?CONJ",
+    "οὐκοῦν": "?CONJ",
+    "οὖν": "?CONJ",
+    "οὔτε": "?CONJ",
+    "πλήν": "?CONJ",
+    "πρίν": "?CONJ",
+    "πῶς": "?CONJ",
+    "τέ": "?CONJ",
+    "τοιγαροῦν": "?CONJ",
+    "τοίνυν": "?CONJ",
+    "ὡς": "?CONJ",
+    "ὡσεί": "?CONJ",
+    "ὥσπερ": "?CONJ",
+    "ὡσπερεί": "?CONJ",
+    "ὥστε": "?CONJ",
+}
+
+def get_pos(word):
+    if word.attrib["Cat"] == "conj":
+        return CONJ_POS_MAP[word.attrib.get('UnicodeLemma')]
+    else:
+        return POS_MAP[word.attrib["Cat"]]
+
 def process_sentence(sent, file):
     propagate_heads(sent)
     distribute_heads(sent, sent.attrib['PhraseHead'])
     xml_words = sorted(iter_words(sent), key=get_id)
     conllu_words = []
     for word in xml_words:
+        pos = get_pos(word)
+
         line = [
             get_id(word),                     # ID
             word.text,                        # FORM
             word.attrib.get('UnicodeLemma'),  # LEMMA
             word.attrib.get('upos', '_'),     # UPOS
-            word.attrib.get('Cat', '_'),      # XPOS
+            pos,                              # XPOS
             get_feats(word),                  # FEATS
             word.attrib.get('headword', '_'), # HEAD
-            word.attrib.get('deprel', '_'),   # DEPREL
+            get_deprel(word, pos),            # DEPREL
             '_',                              # DEPS
             get_misc(word),                   # MISC
         ]
