@@ -1,3 +1,6 @@
 [submodule "macula-greek"]
 	path = macula-greek
 	url = https://github.com/Clear-Bible/macula-greek.git
+[submodule "data_gathering/UD_Ancient_Greek-PROIEL"]
+	path = data_gathering/UD_Ancient_Greek-PROIEL
+	url = https://github.com/UniversalDependencies/UD_Ancient_Greek-PROIEL
